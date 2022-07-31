@@ -1,42 +1,91 @@
 from collections import deque
 
-circle = [deque(map(int, input())) for _ in range(4)]
+n = int(input())
 k = int(input())
-rotate = []
 
-for _ in range(k):
-    rotate.append(list(map(int, input().split())))
-result = 0
+board = [[0]*(n+1) for _ in range(n+1)]
+apple = []
+for i in range(k):
+    apple.append(list(map(int, input().split())))
+    board[apple[i][0]][apple[i][1]] = 1
 
-for i in range(len(rotate)):
-    num, direct = rotate[i][0], rotate[i][1]
-    num -= 1 # index 조정
-    tmp_2 = circle[num][2]  # 비교 대상 저장
-    tmp_6 = circle[num][6]
-    circle[num].rotate(direct)
-    tmp_direct = direct
+visited = deque()
 
-    # 왼쪽
-    direct = tmp_direct
-    for i in range(num - 1, -1, -1):
-        if circle[i][2] != tmp_6:
-            tmp_6 = circle[i][6]
-            circle[i].rotate(direct * -1)
-            direct *= -1
-        else:
-            break
+move = []
+l = int(input())
+for _ in range(l):
+    x,c = input().split()
+    x = int(x)
+    move.append((x,c))
 
-    # 오른쪽
-    direct = tmp_direct
-    for i in range(num + 1, 4):
-        if circle[i][6] != tmp_2:
-            tmp_2 = circle[i][2]
-            circle[i].rotate(direct * -1)
-            direct *= -1
-        else:
-            break
+curr_pos = 'r'
+dx = 0
+dy = 1
+snake_head = [1,1]
 
-result += circle[0][0] + circle[1][0]*2 + circle[2][0]*4 + circle[3][0]*8
+def movement(pos, dir):
+    if pos == 'r':
+        if dir == 'L':
+            nex_pos = 'u'
+            dx = -1
+            dy = 0
+        if dir == 'D':
+            nex_pos = 'd'
+            dx = 1
+            dy = 0
+    elif pos == 'l':
+        if dir == 'L':
+            nex_pos = 'd'
+            dx = 1
+            dy = 0
+        if dir == 'D':
+            nex_pos = 'u'
+            dx = -1
+            dy = 0
+    elif pos =='u':
+        if dir == 'L':
+            nex_pos = 'l'
+            dx = 0
+            dy = -1
+        if dir == 'D':
+            nex_pos = 'r'
+            dx = 0
+            dy = 1
+    elif pos =='d':
+        if dir == 'L':
+            nex_pos = 'r'
+            dx = 0
+            dy = 1
+        if dir == 'D':
+            nex_pos = 'l'
+            dx = 0
+            dy = -1
+    return nex_pos, dx, dy
 
+count = 0
+i = 0
+while True:
+    count += 1
+    before = [snake_head[0], snake_head[1]]
+    snake_head[0] += dx
+    snake_head[1] += dy
 
-print(result)
+    if snake_head[0] > n or snake_head[0] <= 0 or snake_head[1] > n or snake_head[1] <= 0:
+        print(count)
+        #print(curr_pos)
+        exit()
+    if snake_head in visited:
+        print(count)
+        #print(curr_pos)
+        exit()
+
+    if board[snake_head[0]][snake_head[1]] == 1:
+        board[snake_head[0]][snake_head[1]] = 0
+        visited.append([before[0], before[1]])
+    else:
+        visited.append([before[0], before[1]])
+        visited.popleft()
+
+    if i < len(move) and count == move[i][0]:
+        curr_pos, dx, dy = movement(curr_pos, move[i][1])
+        i += 1
